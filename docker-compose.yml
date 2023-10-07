@@ -1,0 +1,16 @@
+version: '3.1'
+services:
+   summit-jenkins:
+     container_name: summit-jenkins
+     build: .
+     ports:
+        - 8090:8080
+     volumes:
+        - /var/jenkins_home:/var/jenkins_home:wr
+        - /var/run/docker.sock:/var/run/docker.sock #<-컨테이너와 호스트간 /var/run/docker.sock 마운트
+     restart: always
+
+# volumes:
+#   jenkins-data:
+
+ 
