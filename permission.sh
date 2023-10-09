@@ -1,2 +1,2 @@
-chown jenkins:jenkins docker.sock
+chown jenkins:jenkins /var/run/docker.sock
 sudo mkdir /var/jenkins_home
