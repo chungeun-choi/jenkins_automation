@@ -2,7 +2,7 @@ pipeline{
     agent any 
     environment {
         PROJECT_NAME = "T-Cloud-Bigdata-Airflow"
-        DOCKER_IMAGE = "10.0.2.39:5000/airflow_build_image:latest"
+        DOCKER_IMAGE = "localhost:5000/airflow_build_image:latest"
         DOCKER_PATH = "./envfile/docker"
 
     }
@@ -30,11 +30,11 @@ pipeline{
                sshagent (credentials: ['airflow-ssh']) {
                     script {
                         try{
-                            sh "ssh ubuntu@54.180.134.94 -o StrictHostKeyChecking=no \'cd ${PROJECT_NAME} && git pull origin main'"
+                            sh "ssh ubuntu@$COMPONENT_SERVER -o StrictHostKeyChecking=no \'cd ${PROJECT_NAME} && git pull origin main'"
         
                         }catch (err) {
                             println(err.getMessage())
-                            def CHANGE = sh(script: "ssh ubuntu@54.180.134.94 -o StrictHostKeyChecking=no \'git clone git@github.com:Gyeongun/T-Cloud-Bigdata-Airflow.git'", returnStdout: true)
+                            def CHANGE = sh(script: "ssh ubuntu@$COMPONENT_SERVER -o StrictHostKeyChecking=no \'git clone git@github.com:Gyeongun/T-Cloud-Bigdata-Airflow.git'", returnStdout: true)
                             }
                     }
                }
@@ -46,11 +46,11 @@ pipeline{
                 sshagent (credentials: ['airflow-ssh']) {
                     script {
                         try{
-                            sh "ssh ubuntu@13.125.69.10 -o StrictHostKeyChecking=no \'cd ${PROJECT_NAME} && git pull origin main'"
+                            sh "ssh ubuntu@$WORKER_SERVER -o StrictHostKeyChecking=no \'cd ${PROJECT_NAME} && git pull origin main'"
         
                         }catch (err) {
                             println(err.getMessage())
-                            def CHANGE = sh(script: "ssh ubuntu@13.125.69.10 -o StrictHostKeyChecking=no \'git clone git@github.com:Gyeongun/T-Cloud-Bigdata-Airflow.git'", returnStdout: true)
+                            def CHANGE = sh(script: "ssh ubuntu@$WORKER_SERVER -o StrictHostKeyChecking=no \'git clone git@github.com:Gyeongun/T-Cloud-Bigdata-Airflow.git'", returnStdout: true)
                             }
                     }
                }
@@ -70,10 +70,10 @@ pipeline{
             when {   expression {     requierments_change.length() > 0 || dockerfile_change.length() > 0 || dockercompose_change.length() > 0} }
             steps {
                 sshagent (credentials: ['airflow-ssh']) {
-                  sh "ssh ubuntu@54.180.134.94 -o StrictHostKeyChecking=no \'docker image pull ${DOCKER_IMAGE}'"
-                  sh "ssh ubuntu@54.180.134.94 -o StrictHostKeyChecking=no \'cd ${PROJECT_NAME} && docker-compose -f ${DOCKER_PATH}/prod/airflow_component.yml stop && docker-compose -f ${DOCKER_PATH}/prod/airflow_component.yml up -d'"
-                  sh "ssh ubuntu@13.125.69.10 -o StrictHostKeyChecking=no \'docker image pull ${DOCKER_IMAGE}'"
-                  sh "ssh ubuntu@13.125.69.10 -o StrictHostKeyChecking=no \'cd ${PROJECT_NAME} && docker-compose -f ${DOCKER_PATH}/prod/airflow_worker.yml stop && docker-compose -f ${DOCKER_PATH}/prod/airflow_worker.yml up -d'"
+                  sh "ssh ubuntu@$COMPONENT_SERVER -o StrictHostKeyChecking=no \'docker image pull ${DOCKER_IMAGE}'"
+                  sh "ssh ubuntu@$COMPONENT_SERVER -o StrictHostKeyChecking=no \'cd ${PROJECT_NAME} && docker-compose -f ${DOCKER_PATH}/prod/airflow_component.yml stop && docker-compose -f ${DOCKER_PATH}/prod/airflow_component.yml up -d'"
+                  sh "ssh ubuntu@$WORKER_SERVER -o StrictHostKeyChecking=no \'docker image pull ${DOCKER_IMAGE}'"
+                  sh "ssh ubuntu@$WORKER_SERVER -o StrictHostKeyChecking=no \'cd ${PROJECT_NAME} && docker-compose -f ${DOCKER_PATH}/prod/airflow_worker.yml stop && docker-compose -f ${DOCKER_PATH}/prod/airflow_worker.yml up -d'"
                 }
             }
         }
